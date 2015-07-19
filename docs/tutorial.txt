@@ -1,0 +1,47 @@
+- Introduction
+
+  If you want to constrain a cosmological model with observations like supernovae, BAO, CMB, it is very easy and  convenient to use "pydm" package, with which you can:
+
+  - Constrain parameters, find the best fitting values, and their covariance.
+  - Make some contours between each of the parameters after marginalized others.
+  - Plot some distribution, histograms of the given parameters.
+  - Easily add new models.
+  - Easily add new data sets.
+  - Easily generalize to other fields. 
+
+  First, you should download and install the package, please going to the README file for details. Otherwise, you can download the source and set the environment such as the PYTHONPATH to use the modules in the package.
+
+  While you have downloaded the source code, unzip or tar -xzvf it if necessary. After that, you should see a directory named example, in which it provides an example how to use the package. Just read it, then you can get it.
+
+- Examples
+
+  There should be three files in the example directory.
+   - lcdm.py
+   - genset.py
+   - fit.py
+  Now, run the fit.py to see whether your "pydm" package is correctly installed or configured.
+
+  The lcdm.py shows how to realize a cosmological model, and in this file, the LCDM model is provided. You can modify it to fits your model.
+
+  The genset.py includes some settings for the modules, and it is self-explained. So, you can easily catch how to set the modules well to fit your needs.
+
+  The fit.py shows how to fit the parameters of the model. It is simple.
+
+
+- Parameters
+
+  There are some kind of parameters in the package.
+
+  1. Cosmological parameters: in a model, there are some parameters, which are indicated by the "startp" variable. When you construct a model following the lcdm.py example, you shoud add all the parameters in the __init__ method of your model class.
+
+  2. Free parameters: which are the parameters to be constrained, see the "freePara" variable.
+
+  3. Plot parameters: which are the parameters to be plotted in figures, see the "plotPara" variable. You should note that "plotPara" should be also in "freePara", and both of these two list variables have the same length as "startp".
+
+  4. Label parameters: which are the labels in the figures and output files, see the "labelPara" variable.
+
+- Residuals
+
+  Residuals are the vectors that to be calculated from a model. Before the calculation, one should update the values of parameters of the model first.
+
+  Adding a new data corresponds to add a new residual class.
