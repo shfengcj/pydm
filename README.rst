@@ -1,6 +1,6 @@
 
 =======================================
-pydm: Data Mining for Astronomy
+pydm: Python Data Mining for Astronomy
 =======================================
 
 pydm will be a Python module for data mining in astronomy and other fields. At present version, it provides two methods for cosmological model parameter fitting: the Levenberg-Marquardt (LM) technique and the Markov chain Monte Carlo (MCMC) approach.
