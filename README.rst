@@ -3,7 +3,14 @@
 pydm: Python Data Mining for Astronomy
 =======================================
 
-pydm will be a Python module for data mining in astronomy and other fields. At present version, it provides two methods for cosmological model parameter fitting: the Levenberg-Marquardt (LM) technique and the Markov chain Monte Carlo (MCMC) approach.
+pydm will be a Python module for data mining in astronomy and other fields. At present version, it provides two methods for cosmological model parameter fitting: the Levenberg-Marquardt (LM) technique and the Markov chain Monte Carlo (MCMC) approach. If you want to constrain a cosmological model with observations like supernovae, BAO, CMB, it is very easy and  convenient to use "pydm" package, with which you can:
+
+  - Constrain parameters, find the best fitting values, and their covariance.
+  - Make some contours between each of the parameters after marginalized others.
+  - Plot some distribution, histograms of the given parameters.
+  - Easily add new models.
+  - Easily add new data sets.
+  - Easily generalize to other fields.
 
 Introduction
 ============
