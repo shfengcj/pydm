@@ -76,17 +76,16 @@ TODO
 Links
 =======
 
-.. _Python: http://www.python.org
-.. _Numpy: http://www.numpy.org
-.. _Scipy: http://www.scipy.org
-.. _Scikit-learn: http://scikit-learn.org
-.. _Matplotlib: http://matplotlib.org
-.. _AstroPy: http://www.astropy.org/
-.. _agpy: http://packages.python.org/agpy
-.. _emcee: http://dan.iel.fm/emcee/
-.. _PyMC: http://pymc-devs.github.com/pymc/
-.. _HEALPy: https://github.com/healpy/healpy>
-.. _Git: http://git-scm.com/
-.. _GitHub: http://www.github.com
+- Python: http://www.python.org
+- Numpy: http://www.numpy.org
+- Scipy: http://www.scipy.org
+- Scikit-learn: http://scikit-learn.org
+- Matplotlib: http://matplotlib.org
+- AstroPy: http://www.astropy.org/
+- agpy: http://packages.python.org/agpy
+- emcee: http://dan.iel.fm/emcee/
+- PyMC: http://pymc-devs.github.com/pymc/
+- HEALPy: https://github.com/healpy/healpy>
+...
 
 Copyright (C) 2015- Chao-Jun Feng and contributors.
