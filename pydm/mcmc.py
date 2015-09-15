@@ -93,6 +93,7 @@ class mcmcEngine(object):
 
         status = 0
         return [status, res]
+        
 
     # Log likelyhood function
     def __lnlike(self,p):
@@ -106,7 +107,7 @@ class mcmcEngine(object):
     # Define the probability function as likelihood * prior.
     def __lnprior(self, p):
 
-        if self.plimit == None:
+        if self.plimit is None:
             return 0.0
 
         for i, (j, k) in enumerate(self.plimit):
@@ -132,6 +133,7 @@ class mcmcEngine(object):
         p[self.freeIndex] = para
 
         lp =  self.__lnprior(p)
+        
         if not np.isfinite(lp):
             return -np.inf
         return lp + self.__lnlike(p)
@@ -193,7 +195,7 @@ class mcmcEngine(object):
     def LMmin(self,  parinfo = None, LMminSave = True, LMminFile = None):
 
         # Set up the parameters
-        if parinfo == None:
+        if parinfo is None:
             self.parbase={'value':0., 'fixed':0, 'limited':[0,0], 'limits':[0.,0.]}
             self.parinfo=[]
 
@@ -202,9 +204,11 @@ class mcmcEngine(object):
             for i in range(self.n):
                 self.parinfo[i]['value']=self.startp[i]
                 self.parinfo[i]['fixed']= 1- self.freePara[i]
-
+        else:
+            self.parinfo = parinfo
+            
         # Do the LM process
-        m = mpfit(self.__residual, self.startp, parinfo=self.parinfo)
+        m = mpfit(self.__residual, self.startp, parinfo=self.parinfo )
 
         if (m.status <= 0):
             print ('error message = ', m.errmsg)
@@ -247,9 +251,9 @@ class mcmcEngine(object):
 
         # The positions of all walkers
         if not 0 in self.p0:
-            diff = 0.1*self.p0
+            diff = 0.01*self.p0
         else:
-            diff = 0.1
+            diff = 0.01
 
 
         self.pos0 = [self.p0 + diff*np.random.randn(self.ndim) for i in range(self.nwalkers)]
@@ -263,6 +267,7 @@ class mcmcEngine(object):
 
         # Set the progressing bar
         pbar = probar(self.iterations)
+        self.pbar = pbar
 
 
         if chainSave:
@@ -271,6 +276,7 @@ class mcmcEngine(object):
                 f = open(chainFile, "w")
                 for pos, prob, rstate, it in self.sampler.sample(self.pos0, iterations=self.iterations):
                     pbar.update(it)
+                    
                     # Write the current position to a file, one line per walker
                     f.write("\n".join(["\t".join([str(q) for q in p]) for p in pos]))
                     f.write("\n")
@@ -296,9 +302,9 @@ class mcmcEngine(object):
                          zip(*np.percentile(self.MCMCsamp,SigErr[0], axis=0)))
 
 
-        if self.bestPara == None:
+        if self.bestPara is None:
             self.bestPara = np.array([len(self.freeIndex)])
-            
+
         print("MCMC result: ")
         print("===============\n")
         for i in range(len(self.freeIndex)):
@@ -370,17 +376,16 @@ class mcmcEngine(object):
             assert self.freePara[i] >= self.plotPara[i], (
             "Parameters to be plotted must be a free parameter!")
 
-        self.plotIndex   = [i for i, j in zip(self.plotPara, self.freePara)      if j>0]
+        self.plotIndex   = [i for i, j in zip(self.plotPara, self.freePara)  if j>0]
         self.plotIndex   = [i for i, j in enumerate(self.plotIndex)          if j>0]
-        self.plotLabel   = [i for i, j in zip(self.freeLabel, self.plotPara) if j>0]
-
+        self.plotLabel   = [i for i, j in zip(self.labelPara, self.plotPara) if j>0]
         # prefix and suffix of figure names
         self.preFig = preFig
         self.sufFig = sufFig
 
         print ('Plot process with {0} mode :'.format(self.plotModeDic[plotMode]))
 
-        if sampleFile == None:
+        if sampleFile is None:
             try:
                 samp = self.MCMCsamp[:,self.plotIndex]
                 truths = self.bestPara[self.plotIndex]
@@ -394,7 +399,7 @@ class mcmcEngine(object):
                 raise mcmcErr("Samples are not correctly read! Check the chain file!")
 
 
-        if  truths == None:
+        if  truths is None:
             if truthFile <> None:
 
                 truths = self.readParaVal(fileName = truthFile)[self.freeIndex][self.plotIndex]

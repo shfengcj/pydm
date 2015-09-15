@@ -1169,6 +1169,7 @@ class mpfit:
 
                 # Determine the levenberg-marquardt parameter
                 catch_msg = 'calculating LM parameter (MPFIT_)'
+                
                 [fjac, par, wa1, wa2] = self.lmpar(fjac, ipvt, diag, qtf,
                                                      delta, wa1, wa2, par=par)
                 # Store the direction p and x+p. Calculate the norm of p
@@ -1912,10 +1913,16 @@ class mpfit:
         # copy r and (q transpose)*b to preserve input and initialize s.
         # in particular, save the diagonal elements of r in x.
 
+        # Because in numpy 1.9, the return value of diagonal is read-only, see
+        # " In NumPy 1.9 it returns a read-only view on the original array.
+        # Attempting to write to the resulting array will produce an error."
+        #
+        # Jul, 23, 2015
         for j in range(n):
             r[j:n,j] = r[j,j:n]
-        x = numpy.diagonal(r)
+        x = numpy.diagonal(r).copy()  # modified by Chao-Jun Feng 
         wa = qtb.copy()
+        
 
         # Eliminate the diagonal matrix d using a givens rotation
         for j in range(n):
@@ -1928,7 +1935,7 @@ class mpfit:
             # The transformations to eliminate the row of d modify only a
             # single element of (q transpose)*b beyond the first n, which
             # is initially zero.
-
+            
             qtbpj = 0.
             for k in range(j,n):
                 if sdiag[k] == 0:
@@ -1957,6 +1964,7 @@ class mpfit:
             sdiag[j] = r[j,j]
             r[j,j] = x[j]
 
+        
         # Solve the triangular system for z.  If the system is singular
         # then obtain a least squares solution
         nsing = n

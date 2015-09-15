@@ -148,18 +148,20 @@ class lcdm(CosModel):
         return
 
 """
-class CosModel:
-    def __init__(self, name, paras=[]):
+class CosModel(object):
+    def __init__(self, name, nparams, paras=[]):
         """
         name: the name of cosmological model
-        paras: the list of parameters of the model
+        nparams: the number of params
+        nparams: the list of parameters of the model
 
         one could also define parameters here: e.g.
 
         self.Omega_m = 0.2
         ...
         """
-        self.name  = name
+        self.name    = name
+        self.nparams = nparams
 
 
     def __invHubble(self,z):

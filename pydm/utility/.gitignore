@@ -1,0 +1,8 @@
+.DS_Store
+*.pyc
+*.png
+*.egg-info
+*.pdf
+dist
+build
+test_figures

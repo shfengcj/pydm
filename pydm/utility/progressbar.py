@@ -19,7 +19,7 @@ __all__ = ['progress_bar']
 
 class ProgressBar(object):
 
-    def __init__(self, iterations, animation_interval=.5):
+    def __init__(self, iterations, animation_interval=0.5):
         self.iterations = iterations
         self.start = time.time()
         self.last = 0
@@ -29,15 +29,14 @@ class ProgressBar(object):
         return 100 * i / float(self.iterations)
 
     def update(self, i):
+        # some bugs fixed here by Chao-Jun Feng, July, 24, 2015
         elapsed = time.time() - self.start
-        i = i + 1
-
+        
         if elapsed - self.last > self.animation_interval:
-            self.animate(i + 1, elapsed)
+            self.animate(i, elapsed)
             self.last = elapsed
         elif i == self.iterations:
             self.animate(i, elapsed)
-
 
 class TextProgressBar(ProgressBar):
 
@@ -56,6 +55,7 @@ class TextProgressBar(ProgressBar):
         bar = self.bar(self.percentage(i))
         seconds = round(elapsed, 1)
         t = time.gmtime(seconds)
+        
 
         if seconds < 60 :  # less than one minite
             return "[%s] %i of %i complete in %02d s" % (

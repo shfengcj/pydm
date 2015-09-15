@@ -9,6 +9,9 @@ One can added new residual (or data) by inheriting the resiCal class
 
 """
 
+# 1pc = 3.0857e18 cm
+PC2CM = 3.0857e18
+
 import numpy as np
 
 class ResiCal:
@@ -127,10 +130,46 @@ class JLAresiCal(ResiCal):
         cov = np.reshape(cov, (n,n))
         return cov
 
+    def zmuerr(self,p):
+        scriptmcut = 10.
+
+        self.cosModel.parasUpdate(p)
+
+
+
+        covMatrix = self.C00 + p[0]*p[0]*self.C11 +p[1]*p[1]*self.C22 \
+                  + 2.0*p[0]*self.C01 - 2.0*p[1]*self.C02 - 2.0*p[0]*p[1]*self.C12
+
+        modulus = np.zeros(self.numData)
+        modtheory = np.zeros(self.numData)
+
+        for i in range(self.numData):
+            if self.h3rdvar[i] > scriptmcut:
+                prob = 1.0
+            else:
+                prob = 0.0
+
+            modulus[i] = self.mb[i] - (p[2]-p[0]*self.x1[i] + p[1]*self.color[i] + p[3]*prob)
+            covMatrix[i,i] += self.dmb[i]*self.dmb[i] + (p[0]*self.dx1[i])*(p[0]*self.dx1[i]) + \
+                          (p[1]*self.dcolor[i])*(p[1]*self.dcolor[i]) + 2.0*p[0]*self.cov_m_s[i] - \
+                           2.0*p[1]*self.cov_m_c[i] - 2.0*p[0]*p[1]*self.cov_s_c[i]
+
+            cdz = self.cosModel.covDis(self.zcmb[i])
+            modtheory[i] = 5.0*np.log10( (1.0+self.zhel[i])* cdz *3.e5/p[4] )+25.0
+
+        self.modulus   = modulus   # record the modulus
+        self.covMatrix = covMatrix # record the covMatrix
+        zmuerr = {}
+        zmuerr['z'] = self.zcmb
+        zmuerr['mu'] = self.modulus
+        zmuerr['err'] = np.diagonal(self.covMatrix).copy()
+        zmuerr['mut'] = modtheory
+
+        return zmuerr
+
 
     def residual(self, p, fjac=None):
 
-        import numpy as np
         """
         Parameter informations:
         # JLA nuiance parameters
@@ -160,6 +199,7 @@ class JLAresiCal(ResiCal):
 
         res = np.zeros(self.numData)
 
+
         for i in range(self.numData):
             cdz = self.cosModel.covDis(self.zcmb[i])
 
@@ -169,11 +209,12 @@ class JLAresiCal(ResiCal):
                 prob = 0.0
 
             res[i]  = self.mb[i] - (p[2]-p[0]*self.x1[i] + p[1]*self.color[i] + p[3]*prob) \
-                      - ( 5.0*np.log10( (1.0+self.zhel[i])* cdz *3.e5/p[4] )+25.0)
+                        - ( 5.0*np.log10( (1.0+self.zhel[i])* cdz *3.e5/p[4] )+25.0)
 
             covMatrix[i,i] += self.dmb[i]*self.dmb[i] + (p[0]*self.dx1[i])*(p[0]*self.dx1[i]) + \
-                          (p[1]*self.dcolor[i])*(p[1]*self.dcolor[i]) + 2.0*p[0]*self.cov_m_s[i] - \
-                           2.0*p[1]*self.cov_m_c[i] - 2.0*p[0]*p[1]*self.cov_s_c[i]
+                           (p[1]*self.dcolor[i])*(p[1]*self.dcolor[i]) + 2.0*p[0]*self.cov_m_s[i] - \
+                            2.0*p[1]*self.cov_m_c[i] - 2.0*p[0]*p[1]*self.cov_s_c[i]
+
 
 
         residuals = self._resGen(covMatrix, res)
@@ -243,7 +284,6 @@ class CMBresiCal(ResiCal):
 
 class BAOresiCal(ResiCal):
     def __init__(self,cosModel):
-        import numpy as np
 
         self.invCov = np.array([[4444.,  0.0,      0.0],
                                 [0.0,    215156., 0.0],
@@ -259,7 +299,6 @@ class BAOresiCal(ResiCal):
 
 
     def residual(self, p, fjac=None):
-        import numpy as np
 
         """
         Parameter informations:
@@ -283,7 +322,7 @@ class BAOresiCal(ResiCal):
 
         h2 = ( p[4]/100.0 )**2
         omh2 = p[6]*h2        # dark matter only
-        
+
         b1 = 0.313*omh2**(-0.419)*(1.0 + 0.607*omh2**(0.674) )
         b2 = 0.238*omh2**(0.223)
         z_drag = 1291.0*omh2**(0.251)*(1.0 + b1*p[5]**(b2) )/(1.0 + 0.659*omh2**(0.828) )
@@ -303,3 +342,174 @@ class BAOresiCal(ResiCal):
         res = self._resGen(self.cov, residuals)
 
         return res
+
+
+import random
+# residual for gamma ray burst
+class GamRayresiCal(ResiCal):
+
+    def __init__(self, cosModel, DATA_DIR_GamRay):
+        """
+        cosModel: a object of class CosModel
+        DATA_DIR_GamRay: the directory of Gamma ray data, which should look like this:
+
+        """
+    
+                
+        self.dataDir = DATA_DIR_GamRay
+        self.cosModel = cosModel
+        
+        
+        dataFile = open(DATA_DIR_GamRay+'/gammaray.txt', 'r')
+
+        self.name      = np.array([])
+        self.z         = np.array([])
+        self.sb        = np.array([])
+        self.sberr     = np.array([])
+        self.ep        = np.array([])
+        self.eperr     = np.array([])
+
+        for line in dataFile:
+            line = line.strip()
+            if line.startswith('#'):
+                temp=line.strip('#').split()
+                self.snhead = temp
+            else:
+                temp=line.strip('\r\n').split()
+
+                self.name      = np.append(self.name,       temp[0])
+                self.z         = np.append(self.z,       float(temp[1]) )
+                self.sb        = np.append(self.sb,      float(temp[2]) )
+                self.sberr     = np.append(self.sberr,   float(temp[3]) )
+                self.ep        = np.append(self.ep,      float(temp[4]) )
+                self.eperr     = np.append(self.eperr,   float(temp[5]) )
+
+
+
+        dataFile.close()
+
+        self.numData = len(self.name)
+        
+        self.syserr = 0.7571
+        
+        # To get system residual when self.isAllRes = False
+        self.isAllRes = True   
+        self.ndata   = 100   
+        self.rindex = np.array(random.sample(range(0,self.numData),self.ndata))
+        
+
+
+
+    def residualAll(self, p, fjac=None):
+
+        """
+        Parameter informations:
+        # JLA nuiance parameters
+        # ==========================
+        # p[0]:alpha
+        # p[1]:beta
+        # p[2]:M
+        # p[3]:DeltaM
+        #
+        # Cosmological parameters
+        # ==========================
+        # p[4]:H0
+        # num = cosModel.nparams  (not include H0)
+        # p[5]:Omega_bh2
+        # p[6]:Omega_m
+        # p[7]:Omega_rh2
+        # p[8]:Omega_k
+        # p[9]... other Cosmological parameters
+        # ...
+        # p[4+num]
+        
+        # Gammary buerst parameters
+        # ==============================
+        # p[4+num+1] : lambda   p[5+num]
+        # p[4+num+2] : b        p[6+num] 
+        """
+        
+        num = self.cosModel.nparams
+        
+
+        # remember to update the model parameter before calculation
+        self.cosModel.parasUpdate(p)
+
+        res = np.zeros(self.numData)
+        err = np.zeros(self.numData)
+        
+        
+
+        for i in range(self.numData):
+            cdz = self.cosModel.covDis(self.z[i])
+            
+            powe  = (self.ep[i]/300.0)**p[6+num]
+            sbolo = self.sb[i]*(PC2CM**2)*1.e-3 
+            tmp = powe*(1.+self.z[i])/(4.*np.pi)/sbolo
+            
+            res[i] = 2.5*np.log10(tmp)+2.5*p[5+num]- ( 5.0*np.log10( (1.0+self.z[i])* cdz *3.e5/p[4] )+25.0)            
+            
+            sig1 =  p[6+num]*self.eperr[i]/self.ep[i] 
+            sig2 =  self.sberr[i]/self.sb[i]
+            
+            staerr2 = (2.5/np.log(10))**2*(sig1**2+sig2**2)
+            syserr2 = (2.5/np.log(10))**2*self.syserr**2
+            
+            err[i] = np.sqrt(staerr2 + syserr2)
+        
+            
+            
+        residuals = abs(res/err)
+            
+
+        return residuals
+        
+    def residual(self, p, fjac=None):
+        
+        if self.isAllRes:
+            return self.residualAll(p)
+        else:        
+            return self.residualAll(p)[self.rindex]
+        
+        
+        
+    def __func(self, serr, args):
+                
+        
+        
+        self.syserr = serr
+        
+        
+        res = self.residual(args[1])
+        
+        y = (res**2).sum()-args[0]        
+        
+        return y
+        
+        
+    
+    def syserrCal(self, freePara, p ):
+        from scipy.optimize import root
+        
+        num     = len(p)-5
+        dof     = self.ndata-num
+        
+        args = [ dof, p]
+        #print args
+        
+        sol = root(self.__func, 0.3, args=args)
+        
+        self.syserr = sol.x
+        
+        return self.syserr
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        

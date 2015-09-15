@@ -133,7 +133,7 @@ class EnsembleSampler(Sampler):
 
     def sample(self, p0, lnprob0=None, rstate0=None, blobs0=None,
                iterations=1, thin=1, storechain=True, mh_proposal=None,
-               progress_bar=False):
+               progress_bar=False, pbar=None):
         """
         Advance the chain ``iterations`` steps as a generator.
 
