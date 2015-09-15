@@ -4,9 +4,10 @@ from scipy.integrate import romberg
 
 class lcdm(CosModel):
 
-    def __init__(self, name = 'LCDM', isFlat = True, divmax = 15):
-            self.name     = name
-            #self.numParas = 3
+    def __init__(self, name = 'LCDM', isFlat = True, nparams = 4, divmax = 15):
+       
+            super(lcdm, self).__init__(name, nparams)
+            
             self.isFlat   = isFlat
 
             self.ogh2     = 2.469e-5 # light
@@ -87,6 +88,7 @@ class lcdm(CosModel):
 
     def parasUpdate(self,p):
 
+        """
         # JLA nuiance parameters
         # ==========================
         # p[0]:alpha
@@ -102,6 +104,7 @@ class lcdm(CosModel):
         # p[7]:Omega_rh2
         # p[8]:Omega_k
         # p[9]... other Cosmological parameters
+        """
 
         h2 = ( p[4]/100.0 )**2
 

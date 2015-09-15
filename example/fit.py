@@ -70,18 +70,39 @@ if MCMCsim:
     sim.MCMCsim(plimit = plimit, MCMCsimSave = MCMCsimSave, MCMCsimFile = MCMCsimFile,
             chainSave   = chainSave,   chainFile   = chainFile)
 
+#if FIGplot:
+#   sim.FIGplot(plotPara = plotPara, sampleFile = None,
+#           plotMode = plotMode,   isSmooth = isSmooth, isSmooth1d = isSmooth1d,
+#           color    = color, bins     = bins,   levels     = levels,
+#           isFillCont  = isFillCont, isNormHist  = isNormHist, saveDir = OUT_DIR,
+#           preFig = 'lcdm-', sufFig = '.png', dataKwargs = dataKwargs)
+
 if FIGplot:
-   sim.FIGplot(plotPara = plotPara, sampleFile = None,
-           plotMode = plotMode,   isSmooth = isSmooth, isSmooth1d = isSmooth1d,
-           color    = color, bins     = bins,   levels     = levels,
-           isFillCont  = isFillCont, isNormHist  = isNormHist, saveDir = OUT_DIR,
-           preFig = 'lcdm-', sufFig = '.png', dataKwargs = dataKwargs)
-#
-# if FIGplot:
-#     sim.FIGplot(plotPara = plotPara, sampleFile = chainFile,
-#             plotMode = plotMode,   isSmooth = isSmooth, isSmooth1d = isSmooth1d,
-#             color    = color, bins     = bins,   levels     = levels,
-#             isFillCont  = isFillCont, isNormHist  = isNormHist, saveDir = OUT_DIR,
-#             preFig = 'lcdm-', sufFig = '.png', dataKwargs = dataKwargs, truthFile = LMminFile)
+     sim.FIGplot(plotPara = plotPara, sampleFile = chainFile,
+             plotMode = plotMode,   isSmooth = isSmooth, isSmooth1d = isSmooth1d,
+             color    = color, bins     = bins,   levels     = levels,
+             isFillCont  = isFillCont, isNormHist  = isNormHist, saveDir = OUT_DIR,
+             preFig = 'lcdm-', sufFig = '.png', dataKwargs = dataKwargs, truthFile = LMminFile)
+
+
+best = copy.deepcopy(startp)
+freeIndex   = [i for i, j in enumerate(freePara) if j>0]
+best[freeIndex] = sim.bestPara
+
+
+zme = resobj[0].zmuerr(best)
+theory = np.zeros((740,2) )
+
+for i in range(740):
+    theory[i, 0 ] = zme['z'][i]
+    theory[i, 1 ] = zme['mut'][i]
+
+theory = np.sort(theory,axis=0)
+
+
+
+plt.plot(theory[:,0],theory[:,1],'b')
+plt.errorbar(x=zme['z'],y=zme['mu'],yerr=zme['err'], fmt='.r')#, ecolor='grey', lw=1)
+plt.savefig('zmu.png')
 
 print("Jobs are all finished.")
