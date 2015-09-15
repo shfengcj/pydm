@@ -56,7 +56,9 @@ Required packages
 - Scipy  >= 0.15.1
 - Matplotlib >= 1.4.3
 
-Required Astronomical data
+Required Astronomical data:
+
+JLA data: http://supernovae.in2p3.fr/sdss_snls_jla/ReadMe.html
 
 
 Optional
